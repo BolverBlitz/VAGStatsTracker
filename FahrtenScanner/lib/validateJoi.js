@@ -51,10 +51,49 @@ const createValidationRule = (validation, type) => {
                 if (invalidParts.length > 0) {
                     return helper.message(`Invalid Element(s): ${invalidParts.join(', ')}. Allowed: ${validParts.join(', ')}`);
                 }
-                return value;  // Alles gut, Rückgabe des validen Wertes
+                return value;  // Return validated value
             }, 'Komma-seperated list');
             return;
         }
+        // If the rule is for IPv4 validation
+        if (ruleName === 'ipv4') {
+            settingsValidation = settingsValidation.custom((value, helper) => {
+                // Using Joi internally for the custom IPv4 validation
+                const { error } = Joi.string().ip({ version: ['ipv4'], cidr: 'forbidden' }).validate(value);
+                if (error) {
+                    return helper.message('Invalid IPv4 address');
+                }
+                return value;  // Return the validated value
+            }, 'IPv4 validation');
+            return;
+        }
+
+        // If the rule is for IPv6 validation
+        if (ruleName === 'ipv6') {
+            settingsValidation = settingsValidation.custom((value, helper) => {
+                // Using Joi internally for the custom IPv6 validation
+                const { error } = Joi.string().ip({ version: ['ipv6'], cidr: 'forbidden' }).validate(value);
+                if (error) {
+                    return helper.message('Invalid IPv6 address');
+                }
+                return value;  // Return the validated value
+            }, 'IPv6 validation');
+            return;
+        }
+
+        // If the rule is for general IP validation (IPv4 or IPv6)
+        if (ruleName === 'ip') {
+            settingsValidation = settingsValidation.custom((value, helper) => {
+                // Using Joi internally for the custom IP validation
+                const { error } = Joi.string().ip({ cidr: 'forbidden' }).validate(value);
+                if (error) {
+                    return helper.message('Invalid IP address');
+                }
+                return value;  // Return the validated value
+            }, 'IP validation');
+            return;
+        }
+
 
         // if no rule value is given, just call the rule
         if (!ruleValue) {
